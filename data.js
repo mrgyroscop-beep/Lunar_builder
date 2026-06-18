@@ -1,14 +1,22 @@
 window.LUNAR_DATA = {
-  version: "0.1.0",
+  version: "0.2.0",
   defaults: {
+    format: "oneOffSmall",
     faction: "NASA",
-    credits: 50,
-    maxUnits: 6,
-    maxRareItems: 2
+    oxygen: 12,
+    credits: 15
   },
+  formats: [
+    { id: "oneOffSmall", name: "One-off small", oxygen: 12, credits: 15, mode: "oneOff" },
+    { id: "oneOffMedium", name: "One-off medium", oxygen: 20, credits: 25, mode: "oneOff" },
+    { id: "oneOffLarge", name: "One-off large", oxygen: 32, credits: 40, mode: "oneOff" },
+    { id: "campaignStart", name: "Campaign start", oxygen: 12, credits: 12, mode: "campaignStart" },
+    { id: "custom", name: "Custom", oxygen: null, credits: null, mode: "custom" }
+  ],
   factions: [
     { id: "NASA", name: "NASA", theme: "blue" },
-    { id: "USSR", name: "USSR", theme: "red" }
+    { id: "USSR", name: "USSR", theme: "red" },
+    { id: "Unaligned", name: "Mixed / Unaligned", theme: "neutral" }
   ],
   units: [
     {
@@ -19,7 +27,10 @@ window.LUNAR_DATA = {
       role: "Commander",
       set: "Lunar 2 Player Starter",
       img: "assets/cards/core/NASA Commander.png",
-      mass: 9,
+      mass: 4,
+      massTrack: [4, 5, 6, 7, 8, 9],
+      overburdenAt: 8,
+      oxygen: 4,
       move: 3,
       competency: 2,
       defense: 4,
@@ -35,7 +46,10 @@ window.LUNAR_DATA = {
       role: "Combat Specialist",
       set: "Lunar 2 Player Starter",
       img: "assets/cards/core/NASA Combat Spec.png",
-      mass: 9,
+      mass: 4,
+      massTrack: [4, 5, 6, 7, 8, 9],
+      overburdenAt: 8,
+      oxygen: 4,
       move: 3,
       competency: 2,
       defense: 4,
@@ -51,7 +65,10 @@ window.LUNAR_DATA = {
       role: "Generalist",
       set: "Lunar 2 Player Starter",
       img: "assets/cards/core/NASA Generalist.png",
-      mass: 9,
+      mass: 4,
+      massTrack: [4, 5, 6, 7, 8, 9],
+      overburdenAt: 8,
+      oxygen: 4,
       move: 3,
       competency: null,
       defense: 4,
@@ -67,7 +84,10 @@ window.LUNAR_DATA = {
       role: "Commander",
       set: "Lunar 2 Player Starter",
       img: "assets/cards/core/USSR Commander.png",
-      mass: 10,
+      mass: 5,
+      massTrack: [5, 6, 7, 8, 9, 10],
+      overburdenAt: 9,
+      oxygen: 4,
       move: 3,
       competency: 2,
       defense: 5,
@@ -83,7 +103,10 @@ window.LUNAR_DATA = {
       role: "Combat Specialist",
       set: "Lunar 2 Player Starter",
       img: "assets/cards/core/USSR Combat Spec.png",
-      mass: 10,
+      mass: 5,
+      massTrack: [5, 6, 7, 8, 9, 10],
+      overburdenAt: 9,
+      oxygen: 4,
       move: 3,
       competency: 2,
       defense: 5,
@@ -99,7 +122,10 @@ window.LUNAR_DATA = {
       role: "Generalist",
       set: "Lunar 2 Player Starter",
       img: "assets/cards/core/USSR Generalist.png",
-      mass: 10,
+      mass: 5,
+      massTrack: [5, 6, 7, 8, 9, 10],
+      overburdenAt: 9,
+      oxygen: 4,
       move: 2,
       competency: null,
       defense: 5,
@@ -115,7 +141,10 @@ window.LUNAR_DATA = {
       role: "Generalist",
       set: "Attack on Zvezda",
       img: "assets/cards/zvezda/NASA (1).png",
-      mass: 9,
+      mass: 4,
+      massTrack: [4, 5, 6, 7, 8, 9],
+      overburdenAt: 8,
+      oxygen: 4,
       move: 3,
       competency: null,
       defense: 4,
@@ -131,7 +160,10 @@ window.LUNAR_DATA = {
       role: "Medical Specialist",
       set: "Attack on Zvezda",
       img: "assets/cards/zvezda/NASA (2).png",
-      mass: 9,
+      mass: 4,
+      massTrack: [4, 5, 6, 7, 8, 9],
+      overburdenAt: 8,
+      oxygen: 4,
       move: 3,
       competency: 1,
       defense: 4,
@@ -147,7 +179,10 @@ window.LUNAR_DATA = {
       role: "Tech Specialist",
       set: "Attack on Zvezda",
       img: "assets/cards/zvezda/NASA (3).png",
-      mass: 9,
+      mass: 4,
+      massTrack: [4, 5, 6, 7, 8, 9],
+      overburdenAt: 8,
+      oxygen: 4,
       move: 2,
       competency: 1,
       defense: 4,
@@ -163,7 +198,10 @@ window.LUNAR_DATA = {
       role: "Mission Specialist",
       set: "Attack on Zvezda",
       img: "assets/cards/zvezda/NASA (4).png",
-      mass: 9,
+      mass: 4,
+      massTrack: [4, 5, 6, 7, 8, 9],
+      overburdenAt: 8,
+      oxygen: 4,
       move: 2,
       competency: 1,
       defense: 4,
@@ -179,7 +217,10 @@ window.LUNAR_DATA = {
       role: "Medical Specialist",
       set: "Attack on Zvezda",
       img: "assets/cards/zvezda/USSR (1).png",
-      mass: 10,
+      mass: 5,
+      massTrack: [5, 6, 7, 8, 9, 10],
+      overburdenAt: 9,
+      oxygen: 4,
       move: 3,
       competency: 1,
       defense: 5,
@@ -195,7 +236,10 @@ window.LUNAR_DATA = {
       role: "Tech Specialist",
       set: "Attack on Zvezda",
       img: "assets/cards/zvezda/USSR (2).png",
-      mass: 10,
+      mass: 5,
+      massTrack: [5, 6, 7, 8, 9, 10],
+      overburdenAt: 9,
+      oxygen: 4,
       move: 2,
       competency: 1,
       defense: 5,
@@ -211,7 +255,10 @@ window.LUNAR_DATA = {
       role: "Mission Specialist",
       set: "Attack on Zvezda",
       img: "assets/cards/zvezda/USSR (3).png",
-      mass: 10,
+      mass: 5,
+      massTrack: [5, 6, 7, 8, 9, 10],
+      overburdenAt: 9,
+      oxygen: 4,
       move: 2,
       competency: 1,
       defense: 5,
@@ -227,7 +274,10 @@ window.LUNAR_DATA = {
       role: "Generalist",
       set: "Attack on Zvezda",
       img: "assets/cards/zvezda/USSR (4).png",
-      mass: 10,
+      mass: 5,
+      massTrack: [5, 6, 7, 8, 9, 10],
+      overburdenAt: 9,
+      oxygen: 4,
       move: 2,
       competency: null,
       defense: 5,
@@ -259,7 +309,7 @@ window.LUNAR_DATA = {
       mass: 3,
       credits: 10,
       rarity: "Common",
-      traits: ["Common", "Ranged", "Two-Handed", "Mining"],
+      traits: ["Common", "Two-Handed", "Mining"],
       attacks: ["Piercing 6+", "Range 1"],
       text: "Power Trigger: this item gives +4 to mining action comp rolls."
     },
@@ -739,21 +789,105 @@ window.LUNAR_DATA = {
       title: "Mass",
       category: "core",
       tags: ["mass", "equipment", "loadout"],
-      body: "Units and equipment have mass. This builder sums carried item mass per astronaut and the whole roster so overloads are easy to spot before play."
+      body: "A unit's current mass is its base mass plus equipped items, resources, and mission cards. Red boxes on the mass bar give Overburdened tokens."
     },
     {
       id: "core-credits",
       title: "Credits",
       category: "core",
       tags: ["credits", "budget", "items"],
-      body: "Equipment cards have credit costs. The builder budget defaults to 50 credits and can be changed at the top of the roster panel."
+      body: "Credits buy crew-owned equipment and weapons. One-off recommendations are 15 credits for 12 oxygen, 25 credits for 20 oxygen, and 40+ credits for 32 oxygen."
     },
     {
       id: "core-rare",
       title: "Rare Items",
       category: "core",
       tags: ["rare", "deck", "equipment"],
-      body: "Rare items are highlighted in the builder. The current house limit is set to 2 rare items per roster and can be adjusted later in data.js if your campaign uses a different packet."
+      body: "Rare items and rare weapons may be used by Commanders and Specialists. Generalists may not use rare items or rare weapons. Campaign crews may not start with rare items."
+    },
+    {
+      id: "crew-building",
+      title: "Building Your Crew",
+      category: "core",
+      tags: ["crew", "oxygen", "credits", "one-off", "campaign"],
+      body: "Crews are built with two values: total oxygen from units and total credits spent on gear. Small one-off games use 12 oxygen and 15 credits, medium 20 oxygen and 25 credits, large 32 oxygen and 40+ credits."
+    },
+    {
+      id: "crew-ranks",
+      title: "Crew Ranks",
+      category: "core",
+      tags: ["commander", "specialist", "generalist", "unmanned", "ratio"],
+      body: "A crew can have only one Commander. Specialists are limited to one plus one additional Specialist for every two Generalists. Campaign start is stricter: one Commander and one Specialist maximum. Generalists are unlimited and cannot use rare gear."
+    },
+    {
+      id: "crew-faction",
+      title: "Faction And Unaligned Crews",
+      category: "core",
+      tags: ["faction", "unaligned", "mixed", "commander", "boon"],
+      body: "Crews may mix units and items, but mixed crews count as unaligned. Unaligned crews may not use commander special rules or faction-specific items."
+    },
+    {
+      id: "status-overburdened",
+      title: "Overburdened",
+      category: "core",
+      tags: ["status", "mass", "mobility", "climb", "jump"],
+      body: "When current mass reaches red boxes on the unit mass bar, the unit gains one Overburdened token per red mass point. Each token reduces mobility by 1. Overburdened units may not climb or jump."
+    },
+    {
+      id: "trait-two-handed",
+      title: "Two-Handed",
+      category: "equipment",
+      tags: ["trait", "two-handed", "weapon", "item"],
+      body: "A unit may only carry one Two-Handed weapon or item at a time."
+    },
+    {
+      id: "campaign-start",
+      title: "Campaign Start",
+      category: "core",
+      tags: ["campaign", "start", "12 oxygen", "12 credits", "rare"],
+      body: "A campaign crew starts with 12 oxygen and 12 credits. It may not start with rare items and may only start with one Commander and one Specialist."
+    },
+    {
+      id: "campaign-storage",
+      title: "Storage Room",
+      category: "core",
+      tags: ["campaign", "storage", "gear", "equipment", "single use"],
+      body: "Gear bought with credits belongs to the crew storage room and can be assigned before a mission. Non-consumable gear can return to storage; single-use items must be bought again after use."
+    },
+    {
+      id: "campaign-resupply",
+      title: "Resupply Shuttles",
+      category: "core",
+      tags: ["campaign", "shuttle", "rare", "capacity", "travel"],
+      body: "Rare items are acquired through resupply shuttles. Shuttles have credit cost, oxygen/credit cargo capacity, and travel duration before cargo reaches the crew."
+    },
+    {
+      id: "campaign-icons",
+      title: "Lunar Icons",
+      category: "unit",
+      tags: ["campaign", "icons", "upkeep", "dealbreaker", "settlement"],
+      body: "Lunar Icons are campaign recruits with requirements, acquisition cost, upkeep, settlement boons, dealbreakers, and sometimes playable unit profiles with free icon gear."
+    },
+    {
+      id: "campaign-resources",
+      title: "Resources And Postgame Credits",
+      category: "core",
+      tags: ["campaign", "resource", "postgame", "credits", "reward"],
+      body: "Resource tokens are traded during postgame using the resource table. Mission rewards can also grant extra credits, rare purchase options, or special recovery effects."
+    },
+    {
+      id: "mission-list",
+      title: "Core Missions",
+      category: "core",
+      tags: ["mission", "scenario", "deployment", "resource nodes", "postgame"],
+      body: "The core book includes Capture the Cache, Site 74-B, Defend the Settlement, Seismic Fissure, Shuttle Graveyard, I Called Dibs, and Unstable Relations. Each mission defines turns, deployment, hazards, win conditions, resources, and postgame credits."
+    },
+    {
+      id: "environmental-hazards",
+      title: "Environmental Hazards",
+      category: "core",
+      tags: ["hazard", "meteor", "solar storm", "moonquake", "shuttle explosion", "sink hole"],
+      body: "Advanced setup can roll 2D6 for environmental hazards such as Meteor Shower, Solar Storm, Moonquake, Shuttle Explosion, Landslide, Sink Hole, Communications Blackout, Reactor Meltdown, or Apocalypse."
     },
     {
       id: "core-mining",

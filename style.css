@@ -543,8 +543,12 @@ h1 {
 
 .roster-controls {
   display: grid;
-  grid-template-columns: 1fr 118px 96px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+}
+
+.roster-controls label:first-child {
+  grid-column: 1 / -1;
 }
 
 .roster-controls label {
@@ -612,6 +616,12 @@ h1 {
   color: #d8ffdf;
 }
 
+.warning.notice {
+  border-color: rgba(214, 196, 155, 0.34);
+  background: rgba(214, 196, 155, 0.1);
+  color: #f1e6c8;
+}
+
 .roster-list {
   display: grid;
   gap: 10px;
@@ -651,6 +661,33 @@ h1 {
 .roster-unit-title span {
   color: var(--muted);
   font-size: 12px;
+}
+
+.unit-rule-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.unit-rule-row span {
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.unit-rule-row .ok {
+  border-color: rgba(121, 194, 135, 0.34);
+  color: #d8ffdf;
+}
+
+.unit-rule-row .danger {
+  border-color: rgba(231, 105, 105, 0.42);
+  color: #ffd2d2;
 }
 
 .danger-small {

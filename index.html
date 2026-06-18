@@ -102,11 +102,20 @@
                 <input id="rosterName" type="text" autocomplete="off">
               </label>
               <label>
+                <span>Формат</span>
+                <select id="rosterFormat"></select>
+              </label>
+              <label>
                 <span>Фракция</span>
                 <select id="rosterFaction">
                   <option value="NASA">NASA</option>
                   <option value="USSR">USSR</option>
+                  <option value="Unaligned">Mixed / Unaligned</option>
                 </select>
+              </label>
+              <label>
+                <span>Oxygen</span>
+                <input id="rosterOxygen" type="number" min="0" step="1">
               </label>
               <label>
                 <span>Кредиты</span>
@@ -116,11 +125,15 @@
 
             <div class="meter-row">
               <div class="meter-block">
+                <div class="meter-label"><span>Oxygen</span><strong id="oxygenText">0 / 0</strong></div>
+                <div class="meter"><span id="oxygenMeter"></span></div>
+              </div>
+              <div class="meter-block">
                 <div class="meter-label"><span>Предметы</span><strong id="creditsText">0 / 0</strong></div>
                 <div class="meter"><span id="creditsMeter"></span></div>
               </div>
               <div class="meter-block">
-                <div class="meter-label"><span>Масса</span><strong id="massText">0</strong></div>
+                <div class="meter-label"><span>Перегруз</span><strong id="massText">0</strong></div>
                 <div class="meter"><span id="massMeter"></span></div>
               </div>
             </div>
