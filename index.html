@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lunar Crew Builder</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="side-rail" aria-label="Основная навигация">
+      <div class="brand-lockup">
+        <div class="brand-mark" aria-hidden="true">L</div>
+        <div>
+          <div class="brand-title">Lunar</div>
+          <div class="brand-subtitle">Crew Builder</div>
+        </div>
+      </div>
+
+      <nav class="main-nav">
+        <button class="nav-btn active" type="button" data-view="cards" title="Карты">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h11a3 3 0 0 1 3 3v15H8a3 3 0 0 1-3-3V3Zm3 15h8V6H8v12Zm-1 0a1 1 0 0 0 1 1h9v-1H7Z"/></svg>
+          <span>Карты</span>
+        </button>
+        <button class="nav-btn" type="button" data-view="builder" title="Билдер">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v7H4V4Zm9 0h7v4h-7V4ZM4 13h7v7H4v-7Zm9-3h7v10h-7V10ZM6 6v3h3V6H6Zm0 9v3h3v-3H6Zm9-9v1h3V6h-3Zm0 6v6h3v-6h-3Z"/></svg>
+          <span>Билдер</span>
+        </button>
+        <button class="nav-btn" type="button" data-view="rules" title="Правила">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h11a2 2 0 0 1 2 2v16H7a3 3 0 0 1-3-3V5a2 2 0 0 1 2-2Zm1 14h10V5H6v11.17c.31-.11.65-.17 1-.17Zm0 2h10v-1H7a1 1 0 0 0 0 2Zm2-11h6v2H9V8Zm0 4h6v2H9v-2Z"/></svg>
+          <span>Правила</span>
+        </button>
+      </nav>
+
+      <div class="rail-footer">
+        <a class="pdf-link" href="assets/rules/lunar-rulebook.pdf" target="_blank" rel="noopener">Rulebook PDF</a>
+        <a class="pdf-link" href="assets/rules/zvezda-scenarios.pdf" target="_blank" rel="noopener">Zvezda PDF</a>
+      </div>
+    </aside>
+
+    <main class="workspace">
+      <section id="cardsView" class="view active" aria-labelledby="cardsTitle">
+        <div class="section-bar">
+          <div>
+            <p class="eyebrow">Каталог</p>
+            <h1 id="cardsTitle">Карты Lunar</h1>
+          </div>
+          <div class="section-stat" id="catalogCount">0</div>
+        </div>
+
+        <div class="toolbar">
+          <label class="search-box">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4a6 6 0 0 1 4.8 9.6l4.3 4.3-1.4 1.4-4.3-4.3A6 6 0 1 1 10 4Zm0 2a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"/></svg>
+            <input id="catalogSearch" type="search" autocomplete="off" placeholder="Поиск по названию, роли, трейту">
+          </label>
+
+          <div class="segmented" role="tablist" aria-label="Тип карт">
+            <button class="segment active" type="button" data-kind="all">Все</button>
+            <button class="segment" type="button" data-kind="unit">Юниты</button>
+            <button class="segment" type="button" data-kind="equipment">Предметы</button>
+          </div>
+
+          <select id="catalogFaction" class="select-control" aria-label="Фракция">
+            <option value="all">Все фракции</option>
+            <option value="NASA">NASA</option>
+            <option value="USSR">USSR</option>
+            <option value="Neutral">Нейтральные</option>
+          </select>
+
+          <select id="catalogRole" class="select-control" aria-label="Роль">
+            <option value="all">Все роли</option>
+          </select>
+        </div>
+
+        <div id="catalogGrid" class="card-grid" aria-live="polite"></div>
+      </section>
+
+      <section id="builderView" class="view" aria-labelledby="builderTitle">
+        <div class="section-bar">
+          <div>
+            <p class="eyebrow">Ростер</p>
+            <h1 id="builderTitle">Билдер миссии</h1>
+          </div>
+          <div class="builder-actions">
+            <button id="saveRosterBtn" class="icon-btn" type="button" title="Сохранить">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h12l2 2v16H5V3Zm2 2v14h10V7.8L16.2 7H15v5H8V5H7Zm3 0v5h3V5h-3Zm-1 10h6v2H9v-2Z"/></svg>
+            </button>
+            <button id="exportRosterBtn" class="icon-btn" type="button" title="Скачать TXT">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4h2v8l3-3 1.4 1.4L12 15.8l-5.4-5.4L8 9l3 3V4ZM5 18h14v2H5v-2Z"/></svg>
+            </button>
+            <button id="resetRosterBtn" class="icon-btn danger" type="button" title="Очистить">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8l1 2h4v2H3V6h4l1-2Zm-2 6h12l-1 11H7L6 10Zm4 2v7h2v-7h-2Zm4 0v7h2v-7h-2Z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="builder-layout">
+          <div class="builder-panel roster-panel">
+            <div class="roster-controls">
+              <label>
+                <span>Название</span>
+                <input id="rosterName" type="text" autocomplete="off">
+              </label>
+              <label>
+                <span>Фракция</span>
+                <select id="rosterFaction">
+                  <option value="NASA">NASA</option>
+                  <option value="USSR">USSR</option>
+                </select>
+              </label>
+              <label>
+                <span>Кредиты</span>
+                <input id="rosterBudget" type="number" min="0" step="1">
+              </label>
+            </div>
+
+            <div class="meter-row">
+              <div class="meter-block">
+                <div class="meter-label"><span>Предметы</span><strong id="creditsText">0 / 0</strong></div>
+                <div class="meter"><span id="creditsMeter"></span></div>
+              </div>
+              <div class="meter-block">
+                <div class="meter-label"><span>Масса</span><strong id="massText">0</strong></div>
+                <div class="meter"><span id="massMeter"></span></div>
+              </div>
+            </div>
+
+            <div id="rosterWarnings" class="warnings"></div>
+            <div id="rosterList" class="roster-list"></div>
+            <div id="savedRosters" class="saved-rosters"></div>
+          </div>
+
+          <div class="builder-panel pool-panel">
+            <div class="pool-head">
+              <label class="search-box compact">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4a6 6 0 0 1 4.8 9.6l4.3 4.3-1.4 1.4-4.3-4.3A6 6 0 1 1 10 4Zm0 2a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"/></svg>
+                <input id="builderSearch" type="search" autocomplete="off" placeholder="Поиск юнитов">
+              </label>
+              <div id="poolCount" class="muted-count">0</div>
+            </div>
+            <div id="builderPool" class="pool-grid"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="rulesView" class="view" aria-labelledby="rulesTitle">
+        <div class="section-bar">
+          <div>
+            <p class="eyebrow">Справочник</p>
+            <h1 id="rulesTitle">Поиск правил</h1>
+          </div>
+          <div class="section-stat" id="rulesCount">0</div>
+        </div>
+
+        <div class="toolbar rules-toolbar">
+          <label class="search-box">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4a6 6 0 0 1 4.8 9.6l4.3 4.3-1.4 1.4-4.3-4.3A6 6 0 1 1 10 4Zm0 2a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"/></svg>
+            <input id="rulesSearch" type="search" autocomplete="off" placeholder="Oxygen, mining, ranged, resin patch">
+          </label>
+          <div class="segmented" role="tablist" aria-label="Категория правил">
+            <button class="rule-filter active" type="button" data-rule-filter="all">Все</button>
+            <button class="rule-filter" type="button" data-rule-filter="core">Core</button>
+            <button class="rule-filter" type="button" data-rule-filter="unit">Юниты</button>
+            <button class="rule-filter" type="button" data-rule-filter="equipment">Предметы</button>
+          </div>
+        </div>
+
+        <div class="doc-strip">
+          <a href="assets/rules/lunar-rulebook.pdf" target="_blank" rel="noopener">Lunar Rulebook</a>
+          <a href="assets/rules/zvezda-scenarios.pdf" target="_blank" rel="noopener">Attack on Zvezda Scenarios</a>
+        </div>
+
+        <div id="rulesResults" class="rules-results"></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="cardModal" class="modal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal-close" type="button" data-close-modal title="Закрыть">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6L6.4 19 5 17.6l5.6-5.6L5 6.4 6.4 5Z"/></svg>
+      </button>
+      <div id="modalBody" class="modal-body"></div>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
