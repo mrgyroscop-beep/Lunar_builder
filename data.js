@@ -18,6 +18,68 @@ window.LUNAR_DATA = {
     { id: "USSR", name: "USSR", theme: "red" },
     { id: "Unaligned", name: "Mixed / Unaligned", theme: "neutral" }
   ],
+  trainingGames: [
+    {
+      id: "rulebook-mining-demo",
+      title: "Пробная партия: Mining Crews",
+      source: "Rulebook example crews, pages 16-17",
+      note: "Две готовые команды из примеров правил: по 3 модели, 12 Oxygen и 27 кредитов снаряжения на сторону.",
+      teams: [
+        {
+          id: "nasa-mining-crew",
+          side: "NASA",
+          title: "NASA Mining Crew",
+          roster: {
+            name: "NASA Mining Crew",
+            format: "custom",
+            faction: "NASA",
+            oxygenBudget: 12,
+            budget: 27,
+            units: [
+              {
+                unitId: "nasa-commander-core",
+                equipmentIds: ["core-markham-s11"]
+              },
+              {
+                unitId: "nasa-combat-core",
+                equipmentIds: ["core-heavy-mining-drill", "core-resin-patch"]
+              },
+              {
+                unitId: "nasa-generalist-core",
+                equipmentIds: ["core-geology-hammer", "core-improvised-weapon"]
+              }
+            ]
+          }
+        },
+        {
+          id: "ussr-mining-crew",
+          side: "USSR",
+          title: "CCCP Mining Crew",
+          roster: {
+            name: "CCCP Mining Crew",
+            format: "custom",
+            faction: "USSR",
+            oxygenBudget: 12,
+            budget: 27,
+            units: [
+              {
+                unitId: "ussr-commander-core",
+                equipmentIds: ["core-mass-shotgun"]
+              },
+              {
+                unitId: "ussr-combat-core",
+                equipmentIds: ["core-heavy-mining-drill", "core-resin-patch"]
+              },
+              {
+                unitId: "ussr-generalist-core",
+                equipmentIds: ["core-geology-hammer", "core-improvised-weapon"]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
   units: [
     {
       id: "nasa-commander-core",

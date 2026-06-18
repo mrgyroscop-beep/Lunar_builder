@@ -26,6 +26,10 @@
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v7H4V4Zm9 0h7v4h-7V4ZM4 13h7v7H4v-7Zm9-3h7v10h-7V10ZM6 6v3h3V6H6Zm0 9v3h3v-3H6Zm9-9v1h3V6h-3Zm0 6v6h3v-6h-3Z"/></svg>
           <span>Билдер</span>
         </button>
+        <button class="nav-btn" type="button" data-view="game" title="Игра">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h8v7H3V4Zm10 0h8v7h-8V4ZM3 13h5v7H3v-7Zm7 0h11v7H10v-7ZM5 6v3h4V6H5Zm10 0v3h4V6h-4ZM5 15v3h1v-3H5Zm7 0v3h7v-3h-7Z"/></svg>
+          <span>Игра</span>
+        </button>
         <button class="nav-btn" type="button" data-view="rules" title="Правила">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h11a2 2 0 0 1 2 2v16H7a3 3 0 0 1-3-3V5a2 2 0 0 1 2-2Zm1 14h10V5H6v11.17c.31-.11.65-.17 1-.17Zm0 2h10v-1H7a1 1 0 0 0 0 2Zm2-11h6v2H9V8Zm0 4h6v2H9v-2Z"/></svg>
           <span>Правила</span>
@@ -94,6 +98,8 @@
           </div>
         </div>
 
+        <div id="trainingGamePanel" class="training-game-panel"></div>
+
         <div class="builder-layout">
           <div class="builder-panel roster-panel">
             <div class="roster-controls">
@@ -154,6 +160,37 @@
             <div id="builderPool" class="pool-grid"></div>
           </div>
         </div>
+      </section>
+
+      <section id="gameView" class="view" aria-labelledby="gameTitle">
+        <div class="section-bar">
+          <div>
+            <p class="eyebrow">Игровой стол</p>
+            <h1 id="gameTitle">Режим игры</h1>
+          </div>
+          <div class="section-stat" id="gameCount">0</div>
+        </div>
+
+        <div class="game-summary">
+          <div>
+            <span>Ростер</span>
+            <strong id="gameRosterName">-</strong>
+          </div>
+          <div>
+            <span>Oxygen</span>
+            <strong id="gameOxygen">0 / 0</strong>
+          </div>
+          <div>
+            <span>Credits</span>
+            <strong id="gameCredits">0 / 0</strong>
+          </div>
+          <div>
+            <span>Overburden</span>
+            <strong id="gameOverburden">0</strong>
+          </div>
+        </div>
+
+        <div id="gameBoard" class="game-board" aria-live="polite"></div>
       </section>
 
       <section id="rulesView" class="view" aria-labelledby="rulesTitle">

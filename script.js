@@ -215,6 +215,7 @@ function setView(view) {
     button.classList.toggle("active", button.dataset.view === view);
   });
   if (view === "builder") renderBuilder();
+  if (view === "game") renderGame();
   if (view === "rules") renderRules();
 }
 
@@ -401,6 +402,27 @@ function rosterOverburdenTotal() {
   return state.roster.units.reduce((sum, entry) => sum + entryMassProfile(entry).overburden, 0);
 }
 
+function rosterTotals(roster) {
+  const hydrated = hydrateRoster(roster);
+  const equipment = hydrated.units.flatMap(entryEquipment);
+  return {
+    roster: hydrated,
+    units: hydrated.units.length,
+    oxygen: hydrated.units.reduce((sum, entry) => sum + Number(getUnit(entry.unitId)?.oxygen || 0), 0),
+    credits: equipment.reduce((sum, item) => sum + Number(item.credits || 0), 0),
+    itemMass: equipment.reduce((sum, item) => sum + Number(item.mass || 0), 0)
+  };
+}
+
+function findTrainingGame(gameId) {
+  return (data.trainingGames || []).find((game) => game.id === gameId);
+}
+
+function findTrainingTeam(gameId, teamId) {
+  const game = findTrainingGame(gameId);
+  return game?.teams.find((team) => team.id === teamId);
+}
+
 function rosterWarnings() {
   const warnings = [];
   const credits = rosterCreditsUsed();
@@ -467,9 +489,63 @@ function renderBuilder() {
   $("rosterOxygen").value = state.roster.oxygenBudget;
   $("rosterBudget").value = state.roster.budget;
 
+  renderTrainingGamePanel();
   renderBuilderPool();
   renderRoster();
   renderSavedRosters();
+}
+
+function renderTrainingGamePanel() {
+  const games = data.trainingGames || [];
+  $("trainingGamePanel").innerHTML = games.map((game) => `
+    <section class="training-game">
+      <div class="training-game-head">
+        <div>
+          <p class="eyebrow">Пробная партия</p>
+          <h2>${escapeHtml(game.title)}</h2>
+          <p>${escapeHtml(game.note)}</p>
+          <span>${escapeHtml(game.source)}</span>
+        </div>
+        <button class="training-save" type="button" data-save-training-game="${escapeHtml(game.id)}">Сохранить обе</button>
+      </div>
+      <div class="training-teams">
+        ${game.teams.map((team) => renderTrainingTeam(game.id, team)).join("")}
+      </div>
+    </section>
+  `).join("");
+}
+
+function renderTrainingTeam(gameId, team) {
+  const totals = rosterTotals(team.roster);
+  const roster = totals.roster;
+  return `
+    <article class="training-team ${getFactionClass(team.side)}">
+      <div class="training-team-head">
+        <div>
+          <span class="faction-badge ${getFactionClass(team.side)}">${escapeHtml(team.side)}</span>
+          <h3>${escapeHtml(team.title)}</h3>
+        </div>
+        <button type="button" data-load-training-game="${escapeHtml(gameId)}" data-load-training-team="${escapeHtml(team.id)}">Открыть</button>
+      </div>
+      <div class="training-stats">
+        <div><span>Oxygen</span><strong>${totals.oxygen}/${roster.oxygenBudget}</strong></div>
+        <div><span>Credits</span><strong>${totals.credits}/${roster.budget}</strong></div>
+        <div><span>Units</span><strong>${totals.units}</strong></div>
+      </div>
+      <div class="training-unit-list">
+        ${roster.units.map((entry) => {
+          const unit = getUnit(entry.unitId);
+          const equipped = entryEquipment(entry);
+          return `
+            <div class="training-unit">
+              <strong>${escapeHtml(unit?.subtitle || "Unit")}</strong>
+              <span>${equipped.map((item) => escapeHtml(item.name)).join(", ") || "Без предметов"}</span>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    </article>
+  `;
 }
 
 function renderBuilderPool() {
@@ -563,10 +639,60 @@ function renderRosterUnit(entry) {
       <div class="equipped-list">
         ${equipped.map((item, index) => `
           <div class="item-pill">
-            <span>${escapeHtml(item.name)} · ${item.credits} cr · ${item.mass} mass</span>
+            <button class="item-open" type="button" data-open-equipment="${escapeHtml(item.id)}">${escapeHtml(item.name)} · ${item.credits} cr · ${item.mass} mass</button>
             <button type="button" data-remove-equipment="${escapeHtml(entry.instanceId)}" data-equipment-index="${index}" title="Убрать">×</button>
           </div>
         `).join("") || `<span class="tag">Без предметов</span>`}
+      </div>
+    </article>
+  `;
+}
+
+function renderGame() {
+  const credits = rosterCreditsUsed();
+  const oxygen = rosterOxygenUsed();
+  const overburden = rosterOverburdenTotal();
+  $("gameCount").textContent = state.roster.units.length;
+  $("gameRosterName").textContent = state.roster.name || "-";
+  $("gameOxygen").textContent = `${oxygen} / ${state.roster.oxygenBudget}`;
+  $("gameCredits").textContent = `${credits} / ${state.roster.budget}`;
+  $("gameOverburden").textContent = overburden;
+
+  $("gameBoard").innerHTML = state.roster.units.map(renderGameUnit).join("") || `
+    <div class="empty-state game-empty">
+      <button type="button" data-game-open-builder>Открыть билдер</button>
+    </div>
+  `;
+}
+
+function renderGameUnit(entry, index) {
+  const unit = getUnit(entry.unitId);
+  if (!unit) return "";
+  const equipped = entryEquipment(entry);
+  const mass = entryMassProfile(entry);
+  const factionClass = getFactionClass(unit.faction);
+  return `
+    <article class="game-unit ${factionClass}">
+      <header class="game-unit-head">
+        <div>
+          <span class="faction-badge ${factionClass}">${escapeHtml(unit.faction)}</span>
+          <h2>${escapeHtml(unit.name)}</h2>
+          <p>${escapeHtml(unit.subtitle)} · Oxy ${escapeHtml(unit.oxygen)} · Load ${escapeHtml(mass.totalMass)}/${escapeHtml(mass.maxMass)}</p>
+        </div>
+        <div class="game-unit-index">${index + 1}</div>
+      </header>
+      <div class="game-card-spread">
+        <button class="game-card game-card-unit" type="button" data-open-card-kind="unit" data-open-card-id="${escapeHtml(unit.id)}">
+          <img src="${escapeHtml(unit.img)}" alt="${escapeHtml(unit.name)}">
+        </button>
+        <div class="game-equipment-cards">
+          ${equipped.map((item) => `
+            <button class="game-card game-card-item" type="button" data-open-card-kind="equipment" data-open-card-id="${escapeHtml(item.id)}">
+              <img src="${escapeHtml(item.img)}" alt="${escapeHtml(item.name)}">
+              <span>${escapeHtml(item.name)}</span>
+            </button>
+          `).join("") || `<div class="game-no-items">Без предметов</div>`}
+        </div>
       </div>
     </article>
   `;
@@ -588,14 +714,23 @@ function safeStorageWrite(rosters) {
   }
 }
 
-function saveRoster() {
+function upsertSavedRoster(roster, fixedId = "") {
+  const hydrated = hydrateRoster(roster);
   const record = {
-    id: `r-${Date.now().toString(36)}`,
+    id: fixedId || `r-${Date.now().toString(36)}`,
     savedAt: new Date().toISOString(),
-    roster: cloneValue(state.roster)
+    roster: cloneValue(hydrated)
   };
-  state.saved = [record, ...state.saved.filter((item) => item.roster.name !== state.roster.name)].slice(0, 12);
+  state.saved = [
+    record,
+    ...state.saved.filter((item) => item.id !== record.id && item.roster.name !== hydrated.name)
+  ].slice(0, 12);
   safeStorageWrite(state.saved);
+  return record;
+}
+
+function saveRoster() {
+  upsertSavedRoster(state.roster);
   renderSavedRosters();
 }
 
@@ -609,6 +744,22 @@ function loadRoster(id) {
 function deleteRoster(id) {
   state.saved = state.saved.filter((item) => item.id !== id);
   safeStorageWrite(state.saved);
+  renderSavedRosters();
+}
+
+function loadTrainingTeam(gameId, teamId) {
+  const team = findTrainingTeam(gameId, teamId);
+  if (!team) return;
+  state.roster = hydrateRoster(team.roster);
+  renderBuilder();
+}
+
+function saveTrainingGame(gameId) {
+  const game = findTrainingGame(gameId);
+  if (!game) return;
+  game.teams.forEach((team) => {
+    upsertSavedRoster(team.roster, `training-${game.id}-${team.id}`);
+  });
   renderSavedRosters();
 }
 
@@ -776,6 +927,15 @@ function bindEvents() {
     state.builderQuery = event.target.value;
     renderBuilderPool();
   });
+  $("trainingGamePanel").addEventListener("click", (event) => {
+    const loadButton = event.target.closest("[data-load-training-game][data-load-training-team]");
+    if (loadButton) {
+      loadTrainingTeam(loadButton.dataset.loadTrainingGame, loadButton.dataset.loadTrainingTeam);
+      return;
+    }
+    const saveButton = event.target.closest("[data-save-training-game]");
+    if (saveButton) saveTrainingGame(saveButton.dataset.saveTrainingGame);
+  });
   $("rosterName").addEventListener("input", (event) => {
     state.roster.name = event.target.value;
   });
@@ -826,7 +986,19 @@ function bindEvents() {
     const removeEquipBtn = event.target.closest("[data-remove-equipment]");
     if (removeEquipBtn) {
       removeEquipment(removeEquipBtn.dataset.removeEquipment, Number(removeEquipBtn.dataset.equipmentIndex));
+      return;
     }
+    const openEquipmentBtn = event.target.closest("[data-open-equipment]");
+    if (openEquipmentBtn) showCardModal("equipment", openEquipmentBtn.dataset.openEquipment);
+  });
+  $("gameBoard").addEventListener("click", (event) => {
+    const builderButton = event.target.closest("[data-game-open-builder]");
+    if (builderButton) {
+      setView("builder");
+      return;
+    }
+    const cardButton = event.target.closest("[data-open-card-kind][data-open-card-id]");
+    if (cardButton) showCardModal(cardButton.dataset.openCardKind, cardButton.dataset.openCardId);
   });
 
   $("saveRosterBtn").addEventListener("click", saveRoster);
