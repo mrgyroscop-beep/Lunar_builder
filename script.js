@@ -396,6 +396,7 @@ function showCardModal(kind, id) {
         [t("field.set"), card.set]
       ];
   const tags = kind === "unit" ? card.keywords : card.traits;
+  const cardText = localizeCardField(card, "text");
   $("modalBody").innerHTML = `
     <img class="modal-card-image" src="${escapeHtml(card.img)}" alt="${escapeHtml(getCardTitle(card))}">
     <div class="modal-info">
@@ -405,7 +406,7 @@ function showCardModal(kind, id) {
         ${statRows.map(([label, value]) => `<div class="stat"><span>${escapeHtml(label)}</span><strong>${escapeHtml(formatValue(value))}</strong></div>`).join("")}
       </div>
       ${(card.attacks || []).length ? `<div class="tag-row">${card.attacks.map((tag) => `<span class="tag">${escapeHtml(phrase(tag))}</span>`).join("")}</div>` : ""}
-      <p>${escapeHtml(localizeCardField(card, "text"))}</p>
+      ${cardText ? `<p>${escapeHtml(cardText)}</p>` : ""}
       <div class="tag-row">${(tags || []).map((tag) => `<span class="tag">${escapeHtml(term(tag))}</span>`).join("")}</div>
     </div>
   `;

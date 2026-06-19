@@ -1,5 +1,5 @@
 window.LUNAR_DATA = {
-  version: "0.2.0",
+  version: "0.2.1",
   defaults: {
     format: "oneOffSmall",
     faction: "NASA",
@@ -117,7 +117,7 @@ window.LUNAR_DATA = {
       defense: 4,
       integrity: 4,
       keywords: ["USA", "Combat Specialist", "Astronaut"],
-      text: "Combat Training: After using any ranged weapon, this unit can freely adjust its facing. Boot Camp: The first time this unit is hit each round, it can redirect the incoming attack to any unit within 2 inches. Damage is resolved against the newly targeted unit. This ability can only be used for a single hit each round."
+      text: "Combat Training: After using any ranged weapon, this unit can freely adjust its facing. Boot Camp: The first time this unit is hit each round, it can choose to redirect the incoming attack to any unit within 2 inches. The damage will be resolved against the newly targeted unit. This ability can only be used for a single hit each round."
     },
     {
       id: "nasa-generalist-core",
@@ -136,7 +136,7 @@ window.LUNAR_DATA = {
       defense: 4,
       integrity: 4,
       keywords: ["USA", "Generalist", "Astronaut"],
-      text: "A baseline NASA astronaut with no printed special ability."
+      text: ""
     },
     {
       id: "ussr-commander-core",
@@ -193,7 +193,7 @@ window.LUNAR_DATA = {
       defense: 5,
       integrity: 4,
       keywords: ["USSR", "Generalist", "Astronaut"],
-      text: "A baseline USSR cosmonaut with no printed special ability."
+      text: ""
     },
     {
       id: "nasa-generalist-zvezda",
@@ -212,7 +212,7 @@ window.LUNAR_DATA = {
       defense: 4,
       integrity: 4,
       keywords: ["USA", "Generalist", "Astronaut"],
-      text: "A baseline NASA astronaut from the Attack on Zvezda expansion."
+      text: ""
     },
     {
       id: "nasa-medical-zvezda",
@@ -345,7 +345,7 @@ window.LUNAR_DATA = {
       defense: 5,
       integrity: 4,
       keywords: ["USSR", "Generalist", "Astronaut"],
-      text: "A baseline USSR cosmonaut from the Attack on Zvezda expansion."
+      text: ""
     }
   ],
   equipment: [
@@ -360,7 +360,7 @@ window.LUNAR_DATA = {
       rarity: "Common",
       traits: ["Common", "Melee", "Mining"],
       attacks: ["Piercing 4+", "Range M"],
-      text: "Jack Schmitt's Request: this weapon is thrown with a straight 2d6 roll, and item mass is not subtracted from the result. Mining: +1 to mining action comp rolls."
+      text: "Jack Schmitt's Request: This weapon is thrown with a straight 2d6 roll, and the item mass is not subtracted from the result. Mining: This hammer gives +1 to any mining action comp rolls."
     },
     {
       id: "core-heavy-mining-drill",
@@ -371,7 +371,7 @@ window.LUNAR_DATA = {
       mass: 3,
       credits: 10,
       rarity: "Common",
-      traits: ["Common", "Two-Handed", "Mining"],
+      traits: ["Common", "Ranged", "Two-Handed", "Mining"],
       attacks: ["Piercing 6+", "Range 1"],
       text: "Power Trigger: this item gives +4 to mining action comp rolls."
     },
@@ -385,8 +385,8 @@ window.LUNAR_DATA = {
       credits: 1,
       rarity: "Common",
       traits: ["Common", "Melee"],
-      attacks: ["Blunt 6+", "Range M"],
-      text: "A cheap close combat option for emergency fights."
+      attacks: ["Piercing 3+", "Range M"],
+      text: ""
     },
     {
       id: "core-markham-s11",
@@ -399,7 +399,7 @@ window.LUNAR_DATA = {
       rarity: "Rare",
       traits: ["Rare", "Ranged", "Sidearm"],
       attacks: ["Piercing 5+", "Range 8", "Ammo 4"],
-      text: "A compact ranged weapon with piercing damage and sidearm handling."
+      text: ""
     },
     {
       id: "core-mass-shotgun",
@@ -412,7 +412,7 @@ window.LUNAR_DATA = {
       rarity: "Common",
       traits: ["Common", "Ranged", "Two-Handed"],
       attacks: ["Blunt 8+", "Range 10", "Ammo 4"],
-      text: "A heavy close-to-mid range weapon."
+      text: ""
     },
     {
       id: "core-resin-patch",
@@ -425,7 +425,7 @@ window.LUNAR_DATA = {
       rarity: "Common",
       traits: ["Common", "Single Use"],
       attacks: [],
-      text: "A survival patch used to recover or stabilize astronauts. Check the card for the exact timing."
+      text: "Plug the Hole: During your turn, this unit can spend one oxygen to repair one suit integrity of any unit. The target unit will not regain any oxygen until the beginning of your next turn. Survival Instinct: A unit who goes OoA while equipped with this item may use it for free in their next turn. A unit may use this item while prone."
     },
     {
       id: "exp-explosive-charge",
@@ -451,7 +451,7 @@ window.LUNAR_DATA = {
       rarity: "Rare",
       traits: ["Rare", "Single Use", "Explosive"],
       attacks: ["Piercing 6+"],
-      text: "Tripwire: detonates when an enemy explosive action, item, or resource comes within 1 inch. Any unit within 2 inches immediately takes a +6 hit."
+      text: "Tripwire: This item may not be detonated with the detonate explosive action. If any unit, item, or resource comes within 1 inch of this item once armed, any unit within 2 inches immediately takes a +6 hit."
     },
     {
       id: "exp-ultrasonic-mining-pick",
@@ -464,7 +464,7 @@ window.LUNAR_DATA = {
       rarity: "Common",
       traits: ["Common", "Mining", "Melee", "Cutting"],
       attacks: ["Piercing 6+", "Range M"],
-      text: "Tethered: requires an external power source. Power Trigger: +2 to mining comp rolls."
+      text: "Tethered: This weapon requires an external power source and must be tethered to the user (cannot be thrown). Power Trigger: This tool performs mining actions with +2 to mining comp rolls."
     },
     {
       id: "exp-s8-laser-pistol",
@@ -477,7 +477,7 @@ window.LUNAR_DATA = {
       rarity: "Common",
       traits: ["Common", "Ranged", "Blinding"],
       attacks: ["Blinding", "Range 14"],
-      text: "This weapon does no damage. It applies the blinded status on a hit. If fired at a range-finding camera, it cannot be used during that unit's next activation."
+      text: "Blinding: This weapon must be fired from within the target's LoS arc to hit. This weapon does no damage, it instead applies the blinded status to the target. If the target has a Range Finding Camera, it cannot be used during the unit's next activation."
     },
     {
       id: "exp-net-rifle",
@@ -490,7 +490,7 @@ window.LUNAR_DATA = {
       rarity: "Common",
       traits: ["Common", "Ranged"],
       attacks: ["Blunt 5+", "Range 8", "Ammo 2"],
-      text: "Secure Payload: if successfully hit, any unit within 1 inch of the hit unit also becomes entangled."
+      text: "Secure Payload: If successfully hit, any units within 1 inch of the hit unit also become entangled."
     },
     {
       id: "exp-m67-rifle",
@@ -503,7 +503,7 @@ window.LUNAR_DATA = {
       rarity: "Rare",
       traits: ["Rare", "Ranged", "Two-Handed"],
       attacks: ["Piercing 6+", "Range 14", "Ammo 3"],
-      text: "A rare two-handed rifle with long reach."
+      text: ""
     },
     {
       id: "exp-targeting-camera",
@@ -516,7 +516,7 @@ window.LUNAR_DATA = {
       rarity: "Common",
       traits: ["Common"],
       attacks: [],
-      text: "Rangefinder: allows pre-measuring for this unit and any ally units within 2 inches."
+      text: "Rangefinder: Allows pre-measuring for this unit and any ally units within 2 inches."
     },
     {
       id: "exp-enhanced-cooling-suit",
@@ -529,7 +529,7 @@ window.LUNAR_DATA = {
       rarity: "Common",
       traits: ["Common"],
       attacks: [],
-      text: "Nice and Cool: efficient tubing and cooling systems keep you cool. Gives bonuses against fatigue and repeated actions; check the card for exact wording."
+      text: "Nice and Cool: Efficient tubing and cooling systems allow you to keep cool. Add +1 to any rest roll results made by this unit. This applies to automatic rest actions made during the recovery phase."
     },
     {
       id: "exp-kevlar-outer-suit",
@@ -542,7 +542,7 @@ window.LUNAR_DATA = {
       rarity: "Rare",
       traits: ["Rare"],
       attacks: [],
-      text: "Tough Mother: ignore two hazard dice results per combat resolution."
+      text: "Tough Mother: Ignore two hazard dice result per combat resolution."
     },
     {
       id: "exp-blast-shield",
@@ -555,7 +555,7 @@ window.LUNAR_DATA = {
       rarity: "Common",
       traits: ["Common", "Two-Handed"],
       attacks: [],
-      text: "Unwieldy: -1 to unit mobility. Defensive Position: if hit with a ranged weapon from the front arc, ignore one hazard die per combat resolution. Shield Wall: friendly units in contact gain heavy cover."
+      text: "Unwieldy: -1 to unit mobility. Defensive Position: If the unit is being attacked with a ranged weapon from the front arc of this unit, ignore one hazard dice per combat resolution. Shield Wall: Friendly units in contact with this unit outside of this units front arc gain heavy cover."
     },
     {
       id: "exp-ceramic-plating",
@@ -583,7 +583,7 @@ window.LUNAR_DATA = {
       traits: ["Common", "Multi Use"],
       uses: 3,
       attacks: [],
-      text: "Defensive Position and Small Shield Wall defensive effects. Check the card for the full cover wording."
+      text: "Defensive Position: If the unit is being attacked with a ranged weapon from the front arc of this unit, you may re-roll one hazard dice per combat resolution. Consumes 1 use. Small Shield Wall: Friendly units in contact with this unit outside of this unit's front arc gain partial cover. Consumes 1 use when used by the friendly unit during a combat resolution."
     },
     {
       id: "exp-invasive-adrenaline",
@@ -596,7 +596,7 @@ window.LUNAR_DATA = {
       rarity: "Common",
       traits: ["Common", "Single Use"],
       attacks: [],
-      text: "Make a Hole: when used on a unit, it gains oxygen and rolls hazard dice. Survival Instinct: a unit may use the item while prone."
+      text: "Make a Hole: When used on a unit, that unit immediately gains 2 oxygen. Immediately use those 2 oxygen, then roll 1 hazard dice. If a unit has previously used invasive adrenaline this mission and it is used a second time on them, roll 2 hazard dice. For the 3rd, roll three and so on. Survival Instinct: A unit who goes OoA while holding this item may use it for free in the next turn. A unit may use this item while prone."
     },
     {
       id: "exp-lunar-caltrops",
@@ -610,7 +610,7 @@ window.LUNAR_DATA = {
       traits: ["Common", "Multi Use"],
       uses: 2,
       attacks: ["Range 5"],
-      text: "Horseshoes and hand grenades: place a 3 inch circle on the target point. Units are grounded and must roll hazard dice when moving through the area."
+      text: "...Horseshoes and hand grenades: Place a 3 inch circle on the target point. This area is now designated as Dangerous Ground. Any units in this are laid prone must immediately roll one hazard dice. Improvised: On a failed comp roll, randomly scatter the caltrops D6 from the intended target point."
     },
     {
       id: "exp-ballistic-knife",
@@ -623,7 +623,7 @@ window.LUNAR_DATA = {
       rarity: "Rare",
       traits: ["Rare", "Melee", "Ranged", "Cutting"],
       attacks: ["Piercing 6+", "Range M", "Range 6", "Ammo 2"],
-      text: "Spring Loaded: fires as a ranged attack with 6 inch range. Can no longer be used as a cutting item or close combat weapon after firing."
+      text: "Spring Loaded: This weapon can be fired as a ranged attack with a range of 4 inches. Once all ranged ammo is consumed, this weapon can no longer be used as a cutting item or in close combat."
     },
     {
       id: "exp-usa-flag",
@@ -637,7 +637,7 @@ window.LUNAR_DATA = {
       rarity: "Rare",
       traits: ["Rare", "Melee"],
       attacks: ["Piercing 4+", "Range M"],
-      text: "For All Mankind: may force one reroll on any no hit roll. Watch That Air Ripple: gain +1 Comp while engaged in combat."
+      text: "For All Mankind: When fighting in close combat with this item, you may force one re-roll on any to hit roll. Watch That Air Ripple: While a unit equipped with this item is engaged in combat, other friendly units within 3 inches gain +1 Comp."
     },
     {
       id: "exp-ussr-flag",
@@ -651,7 +651,7 @@ window.LUNAR_DATA = {
       rarity: "Rare",
       traits: ["Rare", "Melee"],
       attacks: ["Piercing 4+", "Range M"],
-      text: "For All Mankind: may force one reroll on any no hit roll. Watch That Air Ripple: gain +1 Comp while engaged in combat."
+      text: "For All Mankind: When fighting in close combat with this item, you may force one re-roll on any to hit roll. Watch That Air Ripple: While a unit equipped with this item is engaged in combat, other friendly units within 3 inches gain +1 Comp."
     },
     {
       id: "exp-impact-drill",
@@ -677,7 +677,7 @@ window.LUNAR_DATA = {
       rarity: "Common",
       traits: ["Common", "Ranged", "Two-Handed"],
       attacks: ["Blunt 6+", "Range 8", "Ammo 2"],
-      text: "Improvised: on a failed comp roll while firing, this weapon is clogged and cannot be fired again."
+      text: "Improvised: On a failed comp roll while firing this weapon this unit is knocked back 3 inches directly away from their target and laid prone."
     },
     {
       id: "exp-ils-glove",
@@ -690,7 +690,7 @@ window.LUNAR_DATA = {
       rarity: "Common",
       traits: ["Common"],
       attacks: [],
-      text: "Improved Haptics Sensation: this unit gains an additional +2 to item comp rolls."
+      text: "Improved Haptics Sensation: This unit gains an additional +2 to their comp rolls."
     },
     {
       id: "exp-adhesive-rifle",
@@ -703,7 +703,7 @@ window.LUNAR_DATA = {
       rarity: "Common",
       traits: ["Common", "Ranged"],
       attacks: ["Range 8", "Ammo 3"],
-      text: "Sticky Goo: on a successful comp roll this weapon fires sticky goo in a 1 inch wide line. Units in the line are entangled."
+      text: "Sticky Goo: After a successful comp roll, this weapon fires sticky goo in a 1 inch wide line. Any units in that line are entangled. Upon a failed comp roll, the range of the sticky goo is reduced to only 2 inches."
     },
     {
       id: "exp-reserve-tank",
@@ -730,7 +730,7 @@ window.LUNAR_DATA = {
       rarity: "Common",
       traits: ["Common", "Single Use"],
       attacks: [],
-      text: "Strike the Match: once deployed, any unit within 3 inches is blinded until its next activation. Burning: if hit by this item on a successful throw, that unit immediately rolls one hazard die."
+      text: "Strike the Match: Once deployed, any unit within 3 inches of this item with it in their vision arc gains the blinded status for their next activation. Burning: If a unit is hit by this item on a successful throw, that unit immediately rolls one hazard dice."
     },
     {
       id: "exp-m82a-00",
@@ -743,7 +743,7 @@ window.LUNAR_DATA = {
       rarity: "Rare",
       traits: ["Rare", "Ranged", "Two-Handed", "Big Kick"],
       attacks: ["Piercing 10+", "Range 20", "Ammo 3"],
-      text: "Through and Through: when fired, this weapon hits up to two targets in a straight line within 20 inches. Like a Truck: any units hit are immediately moved 2 inches."
+      text: "Through and Through: When fired, this weapon hits up to two targets in a straight line within 20 inches. Roll for each to hit separately. Like a Truck: Any units hit by this weapon are immediately moved 2 inches away and laid prone."
     },
     {
       id: "exp-resin-patch",
@@ -756,7 +756,7 @@ window.LUNAR_DATA = {
       rarity: "Common",
       traits: ["Common", "Single Use"],
       attacks: [],
-      text: "Plug the Hole: during your turn this unit can spend one oxygen to regain one skill integrity. Survival Instinct: may be used while the unit is prone."
+      text: "Plug the Hole: During your turn, this unit can spend one oxygen to repair one suit integrity of any unit. The target unit will not regain any oxygen until the beginning of your next turn. Survival Instinct: A unit who goes OoA while equipped with this item may use it for free in their next turn. A unit may use this item while prone."
     },
     {
       id: "exp-comm-jamm",
@@ -769,7 +769,7 @@ window.LUNAR_DATA = {
       rarity: "Rare",
       traits: ["Rare"],
       attacks: ["Range 8"],
-      text: "Max Headroom: a unit with this jammer may target a unit and roll a comp check. On a failed comp check, apply the result to the nearest friendly unit instead."
+      text: "Max Headroom: The unit with this jammer may target a unit and roll a comp check. If passed, the unit targeted by this item immediately loses all concentrate tokens. Improvised: On a failed comp check, apply the results to the nearest friendly unit instead."
     },
     {
       id: "exp-auto-dim-visor",
@@ -795,7 +795,7 @@ window.LUNAR_DATA = {
       rarity: "Rare",
       traits: ["Rare", "Ranged", "Two-Handed"],
       attacks: ["Piercing 6+", "Range 6", "Ammo 3"],
-      text: "Buck Shot: fires in a 1 inch wide line and hits any units within range unless they have heavy cover from the shooter."
+      text: "Buck Shot: This weapon fires in a 1 inch wide line and hits any units within range, unless they have heavy cover from the shooter due to terrain or other units."
     },
     {
       id: "exp-standard-knife",
@@ -808,7 +808,7 @@ window.LUNAR_DATA = {
       rarity: "Common",
       traits: ["Common", "Melee", "Cutting"],
       attacks: ["Piercing 6+", "Range M"],
-      text: "A common cutting melee weapon."
+      text: ""
     },
     {
       id: "exp-survival-rifle",
@@ -821,7 +821,7 @@ window.LUNAR_DATA = {
       rarity: "Common",
       traits: ["Common", "Ranged", "Sidearm", "Single Use"],
       attacks: ["Shotgun 4+", "Range 5", "Ammo 2", "Rifle 6+", "Range 8", "Ammo 1"],
-      text: "Spice of Life: this gun has three single-use barrels. Buck Shot: shotgun shells fire in a 1 inch wide line. Slug Use: use for a single shot."
+      text: "Spice of Life: This gun has three single use barrels loaded with two shotgun shells and a single rifle bullet. Before the comp roll, the player must declare which barrel they are firing. Buck Shot: Shotgun shells fire in a 1 inch wide line and hit any units within range, unless they have heavy cover from the shooter due to terrain or other units."
     },
     {
       id: "exp-duct-tape",
@@ -835,7 +835,7 @@ window.LUNAR_DATA = {
       traits: ["Common", "Multi Use"],
       uses: 3,
       attacks: [],
-      text: "Use one oxygen to reroll a D6. On 12, or 3, oxygen or suit integrity point; on 4, 5, 6, repair fails. Units do not gain oxygen back until the next turn."
+      text: "If it's good enough for 13... Use one oxygen to roll a D6. On a 1, 2, or 3, repair one suit integrity point. On a 4, 5, 6, the repair fails. Units do not gain oxygen back until the next turn."
     }
   ],
   rules: [
