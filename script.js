@@ -1,7 +1,20 @@
 const data = window.LUNAR_DATA;
+const i18n = window.LUNAR_I18N || {};
 const storageKey = "lunar_builder_rosters_v1";
+const langStorageKey = "lunar_builder_lang_v1";
+
+function getInitialLanguage() {
+  try {
+    const saved = localStorage.getItem(langStorageKey);
+    if (saved === "ru" || saved === "en") return saved;
+  } catch {
+    // LocalStorage can be unavailable in strict file contexts.
+  }
+  return "ru";
+}
 
 const state = {
+  lang: getInitialLanguage(),
   view: "cards",
   catalogKind: "all",
   catalogFaction: "all",
@@ -39,6 +52,134 @@ function normalize(value) {
 function cloneValue(value) {
   if (typeof structuredClone === "function") return structuredClone(value);
   return JSON.parse(JSON.stringify(value));
+}
+
+function getPath(source, path) {
+  return path.split(".").reduce((value, key) => value?.[key], source);
+}
+
+function formatTemplate(value, params = {}) {
+  return String(value ?? "").replace(/\{(\w+)\}/g, (_, key) => params[key] ?? "");
+}
+
+function t(key, params = {}) {
+  const current = i18n.ui?.[state.lang];
+  const fallback = i18n.ui?.en;
+  const value = current?.[key] ?? getPath(current, key) ?? fallback?.[key] ?? getPath(fallback, key) ?? key;
+  return formatTemplate(value, params);
+}
+
+function dataText(section, id, field, fallback) {
+  return i18n[section]?.[state.lang]?.[id]?.[field] ?? fallback;
+}
+
+function term(value) {
+  return i18n.terms?.[state.lang]?.[value] ?? value;
+}
+
+function phrase(value) {
+  return String(value ?? "").replace(
+    /\b(Piercing|Blunt|Range|Ammo|Shotgun|Rifle|Common|Rare|Ranged|Melee|Mining|Two-Handed|Sidearm|Single Use|Multi Use|Explosive|Cutting|Blinding|Big Kick|Overburdened|Blinded|Entangled)\b/g,
+    (match) => term(match)
+  );
+}
+
+function factionLabel(faction) {
+  return i18n.factions?.[state.lang]?.[faction] ?? faction;
+}
+
+function formatName(format) {
+  return t(`format.${format.id}`);
+}
+
+function categoryLabel(category) {
+  return t(`category.${category}`);
+}
+
+function unitName(unit) {
+  return dataText("units", unit.id, "name", unit.name);
+}
+
+function unitSubtitle(unit) {
+  return dataText("units", unit.id, "subtitle", term(unit.subtitle));
+}
+
+function unitText(unit) {
+  return dataText("units", unit.id, "text", unit.text);
+}
+
+function equipmentName(item) {
+  return dataText("equipment", item.id, "name", item.name);
+}
+
+function equipmentText(item) {
+  return dataText("equipment", item.id, "text", item.text);
+}
+
+function ruleTitle(rule) {
+  return dataText("rules", rule.id, "title", rule.title);
+}
+
+function ruleBody(rule) {
+  return dataText("rules", rule.id, "body", rule.body);
+}
+
+function trainingText(id, field, fallback) {
+  return i18n.trainingGames?.[state.lang]?.[id]?.[field] ?? fallback;
+}
+
+function localizeCardField(card, field) {
+  if (card.kind === "unit") {
+    if (field === "name") return unitName(card);
+    if (field === "subtitle") return unitSubtitle(card);
+    if (field === "text") return unitText(card);
+  }
+  if (card.kind === "equipment") {
+    if (field === "name") return equipmentName(card);
+    if (field === "text") return equipmentText(card);
+  }
+  return card[field];
+}
+
+function applyStaticTranslations() {
+  document.documentElement.lang = state.lang;
+  document.querySelectorAll("[data-i18n]").forEach((element) => {
+    element.textContent = t(element.dataset.i18n);
+  });
+  document.querySelectorAll("[data-i18n-title]").forEach((element) => {
+    element.title = t(element.dataset.i18nTitle);
+  });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach((element) => {
+    element.placeholder = t(element.dataset.i18nPlaceholder);
+  });
+  document.querySelectorAll("[data-i18n-aria-label]").forEach((element) => {
+    element.setAttribute("aria-label", t(element.dataset.i18nAriaLabel));
+  });
+  document.querySelectorAll("[data-i18n-term]").forEach((element) => {
+    element.textContent = term(element.dataset.i18nTerm);
+  });
+  document.querySelectorAll("[data-lang]").forEach((button) => {
+    const active = button.dataset.lang === state.lang;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+}
+
+function setLanguage(lang) {
+  if (lang !== "ru" && lang !== "en") return;
+  state.lang = lang;
+  try {
+    localStorage.setItem(langStorageKey, lang);
+  } catch {
+    // LocalStorage can be unavailable in strict file contexts.
+  }
+  applyStaticTranslations();
+  buildRoleOptions();
+  renderRosterFormatOptions();
+  renderCatalog();
+  renderBuilder();
+  renderGame();
+  renderRules();
 }
 
 function getFormat(id) {
@@ -118,36 +259,44 @@ function getFactionClass(faction) {
 }
 
 function getCardTitle(card) {
-  return card.kind === "equipment" ? card.name : `${card.name}`;
+  return card.kind === "equipment" ? equipmentName(card) : unitName(card);
 }
 
 function getCardSubtitle(card) {
   if (card.kind === "equipment") {
-    return `${card.rarity || "Common"} · ${card.mass} mass · ${card.credits} credits`;
+    return `${term(card.rarity || "Common")} · ${card.mass} ${t("short.mass")} · ${card.credits} ${t("short.credits")}`;
   }
-  return `${card.subtitle} · Oxy ${card.oxygen} · base mass ${card.mass}`;
+  return `${unitSubtitle(card)} · ${t("short.oxygen")} ${card.oxygen} · ${t("field.baseMass").toLowerCase()} ${card.mass}`;
 }
 
 function cardSearchText(card) {
   return normalize([
     card.name,
+    localizeCardField(card, "name"),
     card.subtitle,
+    localizeCardField(card, "subtitle"),
     card.faction,
+    factionLabel(card.faction),
     card.role,
+    term(card.role),
     card.set,
     card.rarity,
+    term(card.rarity),
     card.text,
+    localizeCardField(card, "text"),
     ...(card.keywords || []),
     ...(card.traits || []),
-    ...(card.attacks || [])
+    ...(card.traits || []).map(term),
+    ...(card.attacks || []),
+    ...(card.attacks || []).map(phrase)
   ].join(" "));
 }
 
 function buildRoleOptions() {
   const roles = [...new Set(data.units.map((unit) => unit.role))].sort();
   $("catalogRole").innerHTML = [
-    '<option value="all">Все роли</option>',
-    ...roles.map((role) => `<option value="${escapeHtml(role)}">${escapeHtml(role)}</option>`)
+    `<option value="all">${escapeHtml(t("cards.allRoles"))}</option>`,
+    ...roles.map((role) => `<option value="${escapeHtml(role)}">${escapeHtml(term(role))}</option>`)
   ].join("");
 }
 
@@ -161,27 +310,27 @@ function renderCatalog() {
   });
 
   $("catalogCount").textContent = cards.length;
-  $("catalogGrid").innerHTML = cards.map(renderCatalogCard).join("") || `<div class="empty-state">Ничего не найдено</div>`;
+  $("catalogGrid").innerHTML = cards.map(renderCatalogCard).join("") || `<div class="empty-state">${escapeHtml(t("empty.cards"))}</div>`;
 }
 
 function renderCatalogCard(card) {
   const subtitle = getCardSubtitle(card);
   const badge = card.kind === "unit"
-    ? `<span class="faction-badge ${getFactionClass(card.faction)}">${escapeHtml(card.faction)}</span>`
-    : `<span class="${card.rarity === "Rare" ? "rare-badge" : "type-badge"}">${escapeHtml(card.rarity || "Item")}</span>`;
+    ? `<span class="faction-badge ${getFactionClass(card.faction)}">${escapeHtml(factionLabel(card.faction))}</span>`
+    : `<span class="${card.rarity === "Rare" ? "rare-badge" : "type-badge"}">${escapeHtml(term(card.rarity || "Item"))}</span>`;
   const stats = card.kind === "unit"
     ? [
-        ["OXY", card.oxygen],
-        ["MOV", card.move],
-        ["COMP", formatValue(card.competency)],
-        ["DEF", card.defense],
-        ["INT", card.integrity]
+        [t("stat.oxy"), card.oxygen],
+        [t("stat.mov"), card.move],
+        [t("stat.comp"), formatValue(card.competency)],
+        [t("stat.def"), card.defense],
+        [t("stat.int"), card.integrity]
       ]
     : [
-        ["MASS", card.mass],
-        ["CR", card.credits],
-        ["TYPE", card.type === "weapon" ? "WPN" : "ITEM"],
-        ["USE", formatValue(card.uses)]
+        [t("stat.mass"), card.mass],
+        [t("stat.cr"), card.credits],
+        [t("stat.type"), term(card.type)],
+        [t("stat.use"), formatValue(card.uses)]
       ];
   const tags = card.kind === "unit" ? card.keywords : card.traits;
   return `
@@ -199,7 +348,7 @@ function renderCatalogCard(card) {
           <div class="stat-row">
             ${stats.map(([label, value]) => `<div class="stat"><span>${escapeHtml(label)}</span><strong>${escapeHtml(formatValue(value))}</strong></div>`).join("")}
           </div>
-          <div class="tag-row">${(tags || []).slice(0, 5).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join("")}</div>
+          <div class="tag-row">${(tags || []).slice(0, 5).map((tag) => `<span class="tag">${escapeHtml(term(tag))}</span>`).join("")}</div>
         </div>
       </button>
     </article>
@@ -225,39 +374,39 @@ function showCardModal(kind, id) {
   const card = { ...source, kind, faction: source.faction || "Neutral" };
   const statRows = kind === "unit"
     ? [
-        ["Faction", card.faction],
-        ["Role", card.role],
-        ["Move", card.move],
-        ["Competency", formatValue(card.competency)],
-        ["Defense", card.defense],
-        ["Oxygen", card.oxygen],
-        ["Integrity", card.integrity],
-        ["Base Mass", card.mass],
-        ["Mass Track", (card.massTrack || []).join(" / ")],
-        ["Overburden At", card.overburdenAt],
-        ["Set", card.set]
+        [t("field.faction"), factionLabel(card.faction)],
+        [t("field.role"), term(card.role)],
+        [t("field.move"), card.move],
+        [t("field.competency"), formatValue(card.competency)],
+        [t("field.defense"), card.defense],
+        [t("field.oxygen"), card.oxygen],
+        [t("field.integrity"), card.integrity],
+        [t("field.baseMass"), card.mass],
+        [t("field.massTrack"), (card.massTrack || []).join(" / ")],
+        [t("field.overburdenAt"), card.overburdenAt],
+        [t("field.set"), card.set]
       ]
     : [
-        ["Type", card.type],
-        ["Rarity", card.rarity],
-        ["Mass", card.mass],
-        ["Credits", card.credits],
-        ["Uses", formatValue(card.uses)],
-        ["Faction", card.faction],
-        ["Set", card.set]
+        [t("field.type"), term(card.type)],
+        [t("field.rarity"), term(card.rarity)],
+        [t("field.mass"), card.mass],
+        [t("field.credits"), card.credits],
+        [t("field.uses"), formatValue(card.uses)],
+        [t("field.faction"), factionLabel(card.faction)],
+        [t("field.set"), card.set]
       ];
   const tags = kind === "unit" ? card.keywords : card.traits;
   $("modalBody").innerHTML = `
     <img class="modal-card-image" src="${escapeHtml(card.img)}" alt="${escapeHtml(getCardTitle(card))}">
     <div class="modal-info">
       <h2 id="modalTitle">${escapeHtml(getCardTitle(card))}</h2>
-      <div class="subtitle">${escapeHtml(kind === "unit" ? card.subtitle : `${card.rarity} ${card.type}`)}</div>
+      <div class="subtitle">${escapeHtml(kind === "unit" ? unitSubtitle(card) : `${term(card.rarity)} ${term(card.type)}`)}</div>
       <div class="detail-grid">
         ${statRows.map(([label, value]) => `<div class="stat"><span>${escapeHtml(label)}</span><strong>${escapeHtml(formatValue(value))}</strong></div>`).join("")}
       </div>
-      ${(card.attacks || []).length ? `<div class="tag-row">${card.attacks.map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join("")}</div>` : ""}
-      <p>${escapeHtml(card.text)}</p>
-      <div class="tag-row">${(tags || []).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join("")}</div>
+      ${(card.attacks || []).length ? `<div class="tag-row">${card.attacks.map((tag) => `<span class="tag">${escapeHtml(phrase(tag))}</span>`).join("")}</div>` : ""}
+      <p>${escapeHtml(localizeCardField(card, "text"))}</p>
+      <div class="tag-row">${(tags || []).map((tag) => `<span class="tag">${escapeHtml(term(tag))}</span>`).join("")}</div>
     </div>
   `;
   $("cardModal").classList.add("active");
@@ -294,31 +443,31 @@ function entryEquipment(entry) {
 }
 
 function equipmentRuleIssue(unit, equipment, equipmentIds = []) {
-  if (!unit || !equipment) return "Неизвестный юнит или предмет.";
+  if (!unit || !equipment) return t("equip.unknown");
   if (equipment.faction && (state.roster.faction !== equipment.faction || equipment.faction !== unit.faction)) {
-    return "Фракционный предмет доступен только чистому экипажу этой фракции.";
+    return t("equip.faction");
   }
   if (state.roster.format === "campaignStart" && equipment.rarity === "Rare") {
-    return "Кампанию нельзя начинать с rare предметами.";
+    return t("equip.campaignRare");
   }
   if (equipment.rarity === "Rare" && isGeneralistRole(unit.role)) {
-    return "Generalist не может использовать rare предметы или оружие.";
+    return t("equip.generalistRare");
   }
   if (equipment.rarity === "Rare" && !isCommanderRole(unit.role) && !isSpecialistRole(unit.role)) {
-    return "Rare предметы могут использовать только Commander или Specialist.";
+    return t("equip.rareRank");
   }
   const isRangedWeapon = equipment.type === "weapon" && (equipment.traits || []).includes("Ranged");
   if (unit.role === "Medical Specialist" && isRangedWeapon) {
-    return "Medical Specialist не может использовать ranged weapons.";
+    return t("equip.medicalRanged");
   }
   const isRareWeapon = equipment.type === "weapon" && equipment.rarity === "Rare";
   if (unit.role === "Tech Specialist" && isRareWeapon) {
-    return "Tech Specialist не может использовать rare weapons.";
+    return t("equip.techRare");
   }
   if (isTwoHanded(equipment)) {
     const equipped = equipmentIds.map(getEquipment).filter(Boolean);
     if (equipped.some(isTwoHanded)) {
-      return "Юнит может нести только один Two-Handed предмет или оружие.";
+      return t("equip.twoHanded");
     }
   }
   return "";
@@ -433,52 +582,52 @@ function rosterWarnings() {
   const specialists = rosterUnits.filter(({ unit }) => isSpecialistRole(unit.role)).length;
   const generalists = rosterUnits.filter(({ unit }) => isGeneralistRole(unit.role)).length;
   const specialistAllowance = 1 + Math.floor(generalists / 2);
-  if (!state.roster.units.length) warnings.push({ type: "warn", text: "Добавьте хотя бы один юнит в ростер." });
-  if (commanders === 0) warnings.push({ type: "warn", text: "В ростере нет Commander." });
-  if (commanders > 1) warnings.push({ type: "warn", text: "В ростере больше одного Commander." });
-  if (oxygen > state.roster.oxygenBudget) warnings.push({ type: "warn", text: `Превышен лимит Oxygen на ${oxygen - state.roster.oxygenBudget}.` });
-  if (credits > state.roster.budget) warnings.push({ type: "warn", text: `Превышен бюджет на ${credits - state.roster.budget} кредитов.` });
+  if (!state.roster.units.length) warnings.push({ type: "warn", text: t("warn.addUnit") });
+  if (commanders === 0) warnings.push({ type: "warn", text: t("warn.noCommander") });
+  if (commanders > 1) warnings.push({ type: "warn", text: t("warn.tooManyCommanders") });
+  if (oxygen > state.roster.oxygenBudget) warnings.push({ type: "warn", text: t("warn.oxygen", { amount: oxygen - state.roster.oxygenBudget }) });
+  if (credits > state.roster.budget) warnings.push({ type: "warn", text: t("warn.credits", { amount: credits - state.roster.budget }) });
   if (format.mode === "campaignStart" && specialists > 1) {
-    warnings.push({ type: "warn", text: "Campaign start может начинаться только с одним Specialist." });
+    warnings.push({ type: "warn", text: t("warn.campaignSpecialist") });
   } else if (specialists > specialistAllowance) {
-    warnings.push({ type: "warn", text: `Слишком много Specialist: доступно ${specialistAllowance} при ${generalists} Generalist.` });
+    warnings.push({ type: "warn", text: t("warn.specialists", { allowed: specialistAllowance, generalists }) });
   }
   if (format.mode === "campaignStart" && rosterRareCount() > 0) {
-    warnings.push({ type: "warn", text: "Campaign start не может включать rare предметы." });
+    warnings.push({ type: "warn", text: t("warn.campaignRare") });
   }
   if (state.roster.faction === "Unaligned") {
-    warnings.push({ type: "notice", text: "Mixed / Unaligned экипаж не использует commander boons и фракционные предметы." });
+    warnings.push({ type: "notice", text: t("warn.unaligned") });
   } else {
     const offFaction = rosterUnits.filter(({ unit }) => unit.faction !== state.roster.faction);
-    if (offFaction.length) warnings.push({ type: "warn", text: "В чистом экипаже есть юниты другой фракции." });
+    if (offFaction.length) warnings.push({ type: "warn", text: t("warn.offFaction") });
   }
 
   rosterUnits.forEach(({ entry, unit }) => {
     const equipped = entryEquipment(entry);
     const twoHanded = equipped.filter(isTwoHanded);
     if (twoHanded.length > 1) {
-      warnings.push({ type: "warn", text: `${unit.subtitle}: больше одного Two-Handed предмета.` });
+      warnings.push({ type: "warn", text: t("warn.twoHanded", { unit: unitSubtitle(unit) }) });
     }
     equipped.forEach((item) => {
       const issue = equipmentRuleIssue(unit, item, []);
-      if (issue) warnings.push({ type: "warn", text: `${unit.subtitle}: ${item.name} — ${issue}` });
+      if (issue) warnings.push({ type: "warn", text: t("warn.itemIssue", { unit: unitSubtitle(unit), item: equipmentName(item), issue }) });
     });
     const mass = entryMassProfile(entry);
     if (mass.overburden > 0) {
-      warnings.push({ type: "warn", text: `${unit.subtitle}: масса ${mass.totalMass}/${mass.maxMass}, Overburdened ${mass.overburden}.` });
+      warnings.push({ type: "warn", text: t("warn.overburden", { unit: unitSubtitle(unit), total: mass.totalMass, max: mass.maxMass, count: mass.overburden }) });
     }
     if (mass.overflow > 0) {
-      warnings.push({ type: "warn", text: `${unit.subtitle}: масса выше напечатанной шкалы на ${mass.overflow}.` });
+      warnings.push({ type: "warn", text: t("warn.overflow", { unit: unitSubtitle(unit), amount: mass.overflow }) });
     }
   });
 
-  if (!warnings.length) warnings.push({ type: "ok", text: "Ростер проходит проверки правил построения экипажа." });
+  if (!warnings.length) warnings.push({ type: "ok", text: t("warn.ok") });
   return warnings;
 }
 
 function renderRosterFormatOptions() {
   $("rosterFormat").innerHTML = data.formats
-    .map((format) => `<option value="${escapeHtml(format.id)}">${escapeHtml(format.name)}</option>`)
+    .map((format) => `<option value="${escapeHtml(format.id)}">${escapeHtml(formatName(format))}</option>`)
     .join("");
 }
 
@@ -501,12 +650,12 @@ function renderTrainingGamePanel() {
     <section class="training-game">
       <div class="training-game-head">
         <div>
-          <p class="eyebrow">Пробная партия</p>
-          <h2>${escapeHtml(game.title)}</h2>
-          <p>${escapeHtml(game.note)}</p>
-          <span>${escapeHtml(game.source)}</span>
+          <p class="eyebrow">${escapeHtml(t("training.eyebrow"))}</p>
+          <h2>${escapeHtml(trainingText(game.id, "title", game.title))}</h2>
+          <p>${escapeHtml(trainingText(game.id, "note", game.note))}</p>
+          <span>${escapeHtml(trainingText(game.id, "source", game.source))}</span>
         </div>
-        <button class="training-save" type="button" data-save-training-game="${escapeHtml(game.id)}">Сохранить обе</button>
+        <button class="training-save" type="button" data-save-training-game="${escapeHtml(game.id)}">${escapeHtml(t("builder.saveBoth"))}</button>
       </div>
       <div class="training-teams">
         ${game.teams.map((team) => renderTrainingTeam(game.id, team)).join("")}
@@ -523,14 +672,14 @@ function renderTrainingTeam(gameId, team) {
       <div class="training-team-head">
         <div>
           <span class="faction-badge ${getFactionClass(team.side)}">${escapeHtml(team.side)}</span>
-          <h3>${escapeHtml(team.title)}</h3>
+          <h3>${escapeHtml(trainingText(team.id, "title", team.title))}</h3>
         </div>
-        <button type="button" data-load-training-game="${escapeHtml(gameId)}" data-load-training-team="${escapeHtml(team.id)}">Открыть</button>
+        <button type="button" data-load-training-game="${escapeHtml(gameId)}" data-load-training-team="${escapeHtml(team.id)}">${escapeHtml(t("builder.open"))}</button>
       </div>
       <div class="training-stats">
-        <div><span>Oxygen</span><strong>${totals.oxygen}/${roster.oxygenBudget}</strong></div>
-        <div><span>Credits</span><strong>${totals.credits}/${roster.budget}</strong></div>
-        <div><span>Units</span><strong>${totals.units}</strong></div>
+        <div><span>${escapeHtml(t("field.oxygen"))}</span><strong>${totals.oxygen}/${roster.oxygenBudget}</strong></div>
+        <div><span>${escapeHtml(t("field.credits"))}</span><strong>${totals.credits}/${roster.budget}</strong></div>
+        <div><span>${escapeHtml(t("cards.units"))}</span><strong>${totals.units}</strong></div>
       </div>
       <div class="training-unit-list">
         ${roster.units.map((entry) => {
@@ -538,8 +687,8 @@ function renderTrainingTeam(gameId, team) {
           const equipped = entryEquipment(entry);
           return `
             <div class="training-unit">
-              <strong>${escapeHtml(unit?.subtitle || "Unit")}</strong>
-              <span>${equipped.map((item) => escapeHtml(item.name)).join(", ") || "Без предметов"}</span>
+              <strong>${escapeHtml(unit ? unitSubtitle(unit) : t("cards.units"))}</strong>
+              <span>${equipped.map((item) => escapeHtml(equipmentName(item))).join(", ") || escapeHtml(t("builder.noItems"))}</span>
             </div>
           `;
         }).join("")}
@@ -558,26 +707,26 @@ function renderBuilderPool() {
   $("poolCount").textContent = units.length;
   $("builderPool").innerHTML = units.map((unit) => `
     <article class="pool-card">
-      <img src="${escapeHtml(unit.img)}" alt="${escapeHtml(unit.name)}" loading="lazy">
+      <img src="${escapeHtml(unit.img)}" alt="${escapeHtml(unitName(unit))}" loading="lazy">
       <div class="pool-card-body">
         <div class="card-name-row">
           <div>
-            <h2 class="card-title">${escapeHtml(unit.name)}</h2>
-            <div class="card-subtitle">${escapeHtml(unit.subtitle)} · Oxy ${unit.oxygen} · Base ${unit.mass}</div>
+            <h2 class="card-title">${escapeHtml(unitName(unit))}</h2>
+            <div class="card-subtitle">${escapeHtml(unitSubtitle(unit))} · ${escapeHtml(t("short.oxygen"))} ${unit.oxygen} · ${escapeHtml(t("short.base"))} ${unit.mass}</div>
           </div>
-          <span class="faction-badge ${getFactionClass(unit.faction)}">${escapeHtml(unit.faction)}</span>
+          <span class="faction-badge ${getFactionClass(unit.faction)}">${escapeHtml(factionLabel(unit.faction))}</span>
         </div>
         <div class="stat-row">
-          <div class="stat"><span>OXY</span><strong>${escapeHtml(unit.oxygen)}</strong></div>
-          <div class="stat"><span>MOV</span><strong>${escapeHtml(unit.move)}</strong></div>
-          <div class="stat"><span>COMP</span><strong>${escapeHtml(formatValue(unit.competency))}</strong></div>
-          <div class="stat"><span>DEF</span><strong>${escapeHtml(unit.defense)}</strong></div>
-          <div class="stat"><span>INT</span><strong>${escapeHtml(unit.integrity)}</strong></div>
+          <div class="stat"><span>${escapeHtml(t("stat.oxy"))}</span><strong>${escapeHtml(unit.oxygen)}</strong></div>
+          <div class="stat"><span>${escapeHtml(t("stat.mov"))}</span><strong>${escapeHtml(unit.move)}</strong></div>
+          <div class="stat"><span>${escapeHtml(t("stat.comp"))}</span><strong>${escapeHtml(formatValue(unit.competency))}</strong></div>
+          <div class="stat"><span>${escapeHtml(t("stat.def"))}</span><strong>${escapeHtml(unit.defense)}</strong></div>
+          <div class="stat"><span>${escapeHtml(t("stat.int"))}</span><strong>${escapeHtml(unit.integrity)}</strong></div>
         </div>
-        <button class="pool-add" type="button" data-add-unit="${escapeHtml(unit.id)}">Добавить</button>
+        <button class="pool-add" type="button" data-add-unit="${escapeHtml(unit.id)}">${escapeHtml(t("builder.add"))}</button>
       </div>
     </article>
-  `).join("") || `<div class="empty-state">Для этой фракции ничего не найдено</div>`;
+  `).join("") || `<div class="empty-state">${escapeHtml(t("builder.noUnits"))}</div>`;
 }
 
 function renderRoster() {
@@ -593,7 +742,7 @@ function renderRoster() {
 
   $("oxygenText").textContent = `${oxygen} / ${oxygenBudget}`;
   $("creditsText").textContent = `${credits} / ${budget}`;
-  $("massText").textContent = `${overburden} tokens · ${itemMass} item mass`;
+  $("massText").textContent = `${overburden} · ${itemMass} ${t("short.mass")}`;
   $("oxygenMeter").style.width = `${oxygenPercent}%`;
   $("oxygenMeter").classList.toggle("over", oxygen > oxygenBudget);
   $("creditsMeter").style.width = `${creditsPercent}%`;
@@ -605,7 +754,7 @@ function renderRoster() {
     .map((item) => `<div class="warning ${escapeHtml(item.type)}">${escapeHtml(item.text)}</div>`)
     .join("");
 
-  $("rosterList").innerHTML = state.roster.units.map(renderRosterUnit).join("") || `<div class="empty-state">Ростер пуст</div>`;
+  $("rosterList").innerHTML = state.roster.units.map(renderRosterUnit).join("") || `<div class="empty-state">${escapeHtml(t("builder.noRoster"))}</div>`;
 }
 
 function renderRosterUnit(entry) {
@@ -619,30 +768,30 @@ function renderRosterUnit(entry) {
     <article class="roster-unit">
       <div class="roster-unit-head">
         <div class="roster-unit-title">
-          <strong>${escapeHtml(unit.name)}</strong>
-          <span>${escapeHtml(unit.subtitle)} · Oxy ${unit.oxygen} · Load ${mass.totalMass}/${mass.maxMass}</span>
+          <strong>${escapeHtml(unitName(unit))}</strong>
+          <span>${escapeHtml(unitSubtitle(unit))} · ${escapeHtml(t("short.oxygen"))} ${unit.oxygen} · ${escapeHtml(t("short.load"))} ${mass.totalMass}/${mass.maxMass}</span>
         </div>
-        <button class="danger-small" type="button" data-remove-unit="${escapeHtml(entry.instanceId)}" title="Удалить">×</button>
+        <button class="danger-small" type="button" data-remove-unit="${escapeHtml(entry.instanceId)}" title="${escapeHtml(t("builder.remove"))}">×</button>
       </div>
       <div class="unit-rule-row">
-        <span>Base ${escapeHtml(mass.baseMass)}</span>
-        <span>Items ${escapeHtml(mass.itemMass)}</span>
-        <span class="${massClass}">Overburden ${escapeHtml(mass.overburden)}</span>
+        <span>${escapeHtml(t("short.base"))} ${escapeHtml(mass.baseMass)}</span>
+        <span>${escapeHtml(t("short.items"))} ${escapeHtml(mass.itemMass)}</span>
+        <span class="${massClass}">${escapeHtml(t("builder.overburden"))} ${escapeHtml(mass.overburden)}</span>
       </div>
       <div class="item-select-row">
-        <select data-equip-select="${escapeHtml(entry.instanceId)}" aria-label="Добавить предмет">
-          <option value="">Добавить предмет...</option>
-          ${available.map((item) => `<option value="${escapeHtml(item.id)}">${escapeHtml(item.name)} · ${item.credits} cr · ${item.mass} mass · ${item.rarity}</option>`).join("")}
+        <select data-equip-select="${escapeHtml(entry.instanceId)}" aria-label="${escapeHtml(t("builder.addItemAria"))}">
+          <option value="">${escapeHtml(t("builder.addItem"))}</option>
+          ${available.map((item) => `<option value="${escapeHtml(item.id)}">${escapeHtml(equipmentName(item))} · ${item.credits} ${escapeHtml(t("short.credits"))} · ${item.mass} ${escapeHtml(t("short.mass"))} · ${escapeHtml(term(item.rarity))}</option>`).join("")}
         </select>
         <button type="button" data-equip-add="${escapeHtml(entry.instanceId)}">+</button>
       </div>
       <div class="equipped-list">
         ${equipped.map((item, index) => `
           <div class="item-pill">
-            <button class="item-open" type="button" data-open-equipment="${escapeHtml(item.id)}">${escapeHtml(item.name)} · ${item.credits} cr · ${item.mass} mass</button>
-            <button type="button" data-remove-equipment="${escapeHtml(entry.instanceId)}" data-equipment-index="${index}" title="Убрать">×</button>
+            <button class="item-open" type="button" data-open-equipment="${escapeHtml(item.id)}">${escapeHtml(equipmentName(item))} · ${item.credits} ${escapeHtml(t("short.credits"))} · ${item.mass} ${escapeHtml(t("short.mass"))}</button>
+            <button type="button" data-remove-equipment="${escapeHtml(entry.instanceId)}" data-equipment-index="${index}" title="${escapeHtml(t("builder.remove"))}">×</button>
           </div>
-        `).join("") || `<span class="tag">Без предметов</span>`}
+        `).join("") || `<span class="tag">${escapeHtml(t("builder.noItems"))}</span>`}
       </div>
     </article>
   `;
@@ -660,7 +809,7 @@ function renderGame() {
 
   $("gameBoard").innerHTML = state.roster.units.map(renderGameUnit).join("") || `
     <div class="empty-state game-empty">
-      <button type="button" data-game-open-builder>Открыть билдер</button>
+      <button type="button" data-game-open-builder>${escapeHtml(t("game.openBuilder"))}</button>
     </div>
   `;
 }
@@ -675,23 +824,23 @@ function renderGameUnit(entry, index) {
     <article class="game-unit ${factionClass}">
       <header class="game-unit-head">
         <div>
-          <span class="faction-badge ${factionClass}">${escapeHtml(unit.faction)}</span>
-          <h2>${escapeHtml(unit.name)}</h2>
-          <p>${escapeHtml(unit.subtitle)} · Oxy ${escapeHtml(unit.oxygen)} · Load ${escapeHtml(mass.totalMass)}/${escapeHtml(mass.maxMass)}</p>
+          <span class="faction-badge ${factionClass}">${escapeHtml(factionLabel(unit.faction))}</span>
+          <h2>${escapeHtml(unitName(unit))}</h2>
+          <p>${escapeHtml(unitSubtitle(unit))} · ${escapeHtml(t("short.oxygen"))} ${escapeHtml(unit.oxygen)} · ${escapeHtml(t("short.load"))} ${escapeHtml(mass.totalMass)}/${escapeHtml(mass.maxMass)}</p>
         </div>
         <div class="game-unit-index">${index + 1}</div>
       </header>
       <div class="game-card-spread">
         <button class="game-card game-card-unit" type="button" data-open-card-kind="unit" data-open-card-id="${escapeHtml(unit.id)}">
-          <img src="${escapeHtml(unit.img)}" alt="${escapeHtml(unit.name)}">
+          <img src="${escapeHtml(unit.img)}" alt="${escapeHtml(unitName(unit))}">
         </button>
         <div class="game-equipment-cards">
           ${equipped.map((item) => `
             <button class="game-card game-card-item" type="button" data-open-card-kind="equipment" data-open-card-id="${escapeHtml(item.id)}">
-              <img src="${escapeHtml(item.img)}" alt="${escapeHtml(item.name)}">
-              <span>${escapeHtml(item.name)}</span>
+              <img src="${escapeHtml(item.img)}" alt="${escapeHtml(equipmentName(item))}">
+              <span>${escapeHtml(equipmentName(item))}</span>
             </button>
-          `).join("") || `<div class="game-no-items">Без предметов</div>`}
+          `).join("") || `<div class="game-no-items">${escapeHtml(t("game.noItems"))}</div>`}
         </div>
       </div>
     </article>
@@ -769,7 +918,7 @@ function renderSavedRosters() {
     return;
   }
   $("savedRosters").innerHTML = `
-    <div class="saved-title">Сохраненные</div>
+    <div class="saved-title">${escapeHtml(t("builder.saved"))}</div>
     ${state.saved.map((record) => {
       const roster = hydrateRoster(record.roster);
       const unitCount = roster.units.length;
@@ -779,10 +928,10 @@ function renderSavedRosters() {
         <div class="saved-row">
           <div>
             <strong>${escapeHtml(roster.name)}</strong>
-            <span>${escapeHtml(roster.faction)} · ${unitCount} units · ${oxygen}/${roster.oxygenBudget} oxy · ${credits}/${roster.budget} cr</span>
+            <span>${escapeHtml(factionLabel(roster.faction))} · ${unitCount} ${escapeHtml(t("short.units"))} · ${oxygen}/${roster.oxygenBudget} ${escapeHtml(t("short.oxygen"))} · ${credits}/${roster.budget} ${escapeHtml(t("short.credits"))}</span>
           </div>
           <div class="saved-row-actions">
-            <button type="button" data-load-roster="${escapeHtml(record.id)}">Открыть</button>
+            <button type="button" data-load-roster="${escapeHtml(record.id)}">${escapeHtml(t("builder.open"))}</button>
             <button type="button" data-delete-roster="${escapeHtml(record.id)}">×</button>
           </div>
         </div>
@@ -806,28 +955,28 @@ function resetRoster() {
 function rosterToText() {
   const lines = [];
   const format = getFormat(state.roster.format);
-  lines.push(`Lunar roster: ${state.roster.name}`);
-  lines.push(`Format: ${format.name}`);
-  lines.push(`Faction: ${state.roster.faction}`);
-  lines.push(`Oxygen: ${rosterOxygenUsed()} / ${state.roster.oxygenBudget}`);
-  lines.push(`Credits: ${rosterCreditsUsed()} / ${state.roster.budget}`);
-  lines.push(`Item mass: ${rosterItemMass()}`);
-  lines.push(`Overburden tokens: ${rosterOverburdenTotal()}`);
+  lines.push(`${t("export.title")}: ${state.roster.name}`);
+  lines.push(`${t("export.format")}: ${formatName(format)}`);
+  lines.push(`${t("export.faction")}: ${factionLabel(state.roster.faction)}`);
+  lines.push(`${t("export.oxygen")}: ${rosterOxygenUsed()} / ${state.roster.oxygenBudget}`);
+  lines.push(`${t("export.credits")}: ${rosterCreditsUsed()} / ${state.roster.budget}`);
+  lines.push(`${t("export.itemMass")}: ${rosterItemMass()}`);
+  lines.push(`${t("export.overburden")}: ${rosterOverburdenTotal()}`);
   lines.push("");
   state.roster.units.forEach((entry, index) => {
     const unit = getUnit(entry.unitId);
     if (!unit) return;
     const mass = entryMassProfile(entry);
-    lines.push(`${index + 1}. ${unit.name} - ${unit.subtitle} (Oxy ${unit.oxygen}, Load ${mass.totalMass}/${mass.maxMass}, Overburden ${mass.overburden})`);
+    lines.push(`${index + 1}. ${unitName(unit)} - ${unitSubtitle(unit)} (${t("short.oxygen")} ${unit.oxygen}, ${t("short.load")} ${mass.totalMass}/${mass.maxMass}, ${t("builder.overburden")} ${mass.overburden})`);
     const equipped = entryEquipment(entry);
     if (!equipped.length) {
-      lines.push("   Equipment: none");
+      lines.push(`   ${t("export.equipment")}: ${t("export.none")}`);
     } else {
-      equipped.forEach((item) => lines.push(`   - ${item.name} (${item.credits} cr, ${item.mass} mass)`));
+      equipped.forEach((item) => lines.push(`   - ${equipmentName(item)} (${item.credits} ${t("short.credits")}, ${item.mass} ${t("short.mass")})`));
     }
   });
   lines.push("");
-  lines.push("Checks:");
+  lines.push(`${t("export.checks")}:`);
   rosterWarnings().forEach((item) => lines.push(`- ${item.text}`));
   return lines.join("\n");
 }
@@ -848,19 +997,28 @@ function downloadRoster() {
 function buildRulesIndex() {
   const unitRules = data.units.map((unit) => ({
     id: `unit-${unit.id}`,
-    title: `${unit.subtitle}: ${unit.name}`,
+    title: `${unitSubtitle(unit)}: ${unitName(unit)}`,
     category: "unit",
-    tags: [unit.faction, unit.role, ...(unit.keywords || [])],
-    body: unit.text
+    tags: [factionLabel(unit.faction), term(unit.role), ...(unit.keywords || []).map(term)],
+    body: unitText(unit),
+    search: [unit.name, unit.subtitle, unit.text, ...(unit.keywords || [])]
   }));
   const equipmentRules = data.equipment.map((item) => ({
     id: `equipment-${item.id}`,
-    title: item.name,
+    title: equipmentName(item),
     category: "equipment",
-    tags: [item.rarity, item.type, ...(item.traits || []), ...(item.attacks || [])],
-    body: item.text
+    tags: [term(item.rarity), term(item.type), ...(item.traits || []).map(term), ...(item.attacks || []).map(phrase)],
+    body: equipmentText(item),
+    search: [item.name, item.text, item.rarity, item.type, ...(item.traits || []), ...(item.attacks || [])]
   }));
-  return [...data.rules, ...unitRules, ...equipmentRules];
+  const coreRules = data.rules.map((rule) => ({
+    ...rule,
+    title: ruleTitle(rule),
+    body: ruleBody(rule),
+    tags: (rule.tags || []).map(term),
+    search: [rule.title, rule.body, ...(rule.tags || [])]
+  }));
+  return [...coreRules, ...unitRules, ...equipmentRules];
 }
 
 function renderRules() {
@@ -868,24 +1026,27 @@ function renderRules() {
   const entries = buildRulesIndex().filter((entry) => {
     if (state.rulesFilter !== "all" && entry.category !== state.rulesFilter) return false;
     if (!q) return true;
-    return normalize([entry.title, entry.body, ...(entry.tags || [])].join(" ")).includes(q);
+    return normalize([entry.title, entry.body, ...(entry.tags || []), ...(entry.search || [])].join(" ")).includes(q);
   });
   $("rulesCount").textContent = entries.length;
   $("rulesResults").innerHTML = entries.map((entry) => `
     <article class="rule-card">
       <div class="card-name-row">
         <h3>${escapeHtml(entry.title)}</h3>
-        <span class="type-badge">${escapeHtml(entry.category)}</span>
+        <span class="type-badge">${escapeHtml(categoryLabel(entry.category))}</span>
       </div>
       <p>${escapeHtml(entry.body)}</p>
       <div class="rule-meta">${(entry.tags || []).slice(0, 8).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join("")}</div>
     </article>
-  `).join("") || `<div class="empty-state">По этому запросу правил не найдено</div>`;
+  `).join("") || `<div class="empty-state">${escapeHtml(t("rules.empty"))}</div>`;
 }
 
 function bindEvents() {
   document.querySelectorAll(".nav-btn").forEach((button) => {
     button.addEventListener("click", () => setView(button.dataset.view));
+  });
+  document.querySelectorAll("[data-lang]").forEach((button) => {
+    button.addEventListener("click", () => setLanguage(button.dataset.lang));
   });
 
   document.querySelectorAll(".segment").forEach((button) => {
@@ -1028,6 +1189,7 @@ function bindEvents() {
 }
 
 function init() {
+  applyStaticTranslations();
   buildRoleOptions();
   renderRosterFormatOptions();
   state.roster = hydrateRoster(state.roster);
